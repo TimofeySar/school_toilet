@@ -8,14 +8,6 @@ bot = telebot.TeleBot(token)
 conn = sqlite3.connect('voting_bot.db', check_same_thread=False)
 cursor = conn.cursor()
 
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS votes (
-    chat_id INTEGER,
-    candidate_id INTEGER,
-    username TEXT,
-    PRIMARY KEY (chat_id, candidate_id)
-)
-''')
 
 def add_candidate(name, description, photo):
     cursor.execute('INSERT INTO candidates (name, description, photo) VALUES (?, ?, ?)', (name, description, photo))
@@ -25,7 +17,8 @@ def add_candidate(name, description, photo):
 
 @bot.message_handler(commands=['start'])
 def welcome(message):
-    bot.send_message(message.chat.id, "Привет! Я бот для голосования.\nДля начала голосования введите /vote")
+    username = message.chat.username
+    bot.send_message(message.chat.id, f"Привет, {username}! Я бот для голосования.\nДля начала голосования введите /vote")
 
 
 @bot.message_handler(commands=['vote'])
@@ -130,6 +123,7 @@ def admin_menu(message):
     if is_admin(message.chat.username):
         markup = types.InlineKeyboardMarkup()
         view_votes_button = types.InlineKeyboardButton(text="Просмотр всех голосов", callback_data="view_votes")
+        delite_ = types.InlineKeyboardButton(text="Просмотр всех голосов", callback_data="view_votes")
         markup.add(view_votes_button)
 
         bot.send_message(message.chat.id, "Добро пожаловать в админское меню:", reply_markup=markup)
